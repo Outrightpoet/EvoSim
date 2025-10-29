@@ -1,0 +1,33 @@
+        if self.parent != None:
+
+                self.species[self.species_name][1][self.subspecies_name][1][id] (self)
+                self.species[self.species_name][1][self.subspecies_name][0] += 1
+
+                pop_needed_for_divergence = 10
+
+                if self.species[self.species_name][1][self.subspecies_name][0] > pop_needed_for_divergence and self.subspecies_name != "base_strain":
+
+                    name = name_make()
+                    creatures_moveing = self.species[self.species_name][1][self.subspecies_name][1]
+
+
+                    self.species[name] = [pop_needed_for_divergence, {"base_strain": [pop_needed_for_divergence, creatures_moveing]}, creatures_moveing]
+                    old_species = self.species_name
+                    old_subspecies = self.subspecies_name
+
+                    for index, creature in enumerate(self.species[name][2]):
+                        creature.species[creature.species_name][1][creature.subspecies_name][0] -= 1
+                        creature.species[creature.species_name][0] -= 1
+                        creature.species_name = name
+                        creature.subspecies_name = "base_strain"
+                        creature.id_for_species = index
+                        creature.id_for_subspecies = index
+                    self.species[old_species][1][old_subspecies] = [0, [], f"Seperated to {name}"]
+
+
+
+        elif self.subspecies_name != None:
+            pass
+
+        else:
+            self.subspecies_name = None
