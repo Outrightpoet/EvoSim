@@ -6,19 +6,23 @@ from name_gen import name_make
 from id_getter import gen_id
 from time import sleep as s
 import numpy as np
-import matplotlib.pyplot as plt
 from plottin import plot_data
 from map_maker import make_map_terrain
-import tracemalloc
-import psutil
-import os
 
+memory_collection = True
 
-
-
-
-
-#control panel
+if memory_collection == True:
+    import tracemalloc
+    import psutil
+    import os
+    map_memory = 0
+    creature_memory = 0
+    plot_memory = 0
+    process = psutil.Process(os.getpid())
+    # inside your loop
+    print(f"Memory used: {process.memory_info().rss / 1e6:.2f} MB")
+    #control panel
+    temp_memory = int(process.memory_info().rss / 1e6)
 
 map_width = 30
 map_height = 30
@@ -38,9 +42,14 @@ map = area_map[random.randint(0,map_width-1)][random.randint(0,map_height-1)]
 
 scattered_map = []
 
-#TODO
 make_map_terrain(area_map)
 
+if memory_collection == True:
+    map_memory = int(process.memory_info().rss / 1e6) - temp_memory
+    process = psutil.Process(os.getpid())
+    # inside your loop
+    print(f"Memory used: {process.memory_info().rss / 1e6:.2f} MB")
+    temp_memory = int(process.memory_info().rss / 1e6)
 
 first_species_name = name_make()
 
@@ -68,41 +77,64 @@ for i in range(0,initial_pop):
     creature = Creature(id, life, first_species_name, species, map, "base_strain", None, False)
     #def __init__(self, id, parent_list, species_name, species, location, subspecies_name, parent=None, speciate=True):
     life[id] = creature
-    creature.id_for_subspecies = len(species[first_species_name][1]["base_strain"][1])
     species[first_species_name][2][id] = creature
     species[first_species_name][1]["base_strain"][1][id] = creature
     species[first_species_name][1]["base_strain"][0] += 1
 #life = {joe_suaruas: [overall_pop_val=int, subspecies={joe_suaruas_with_horns: [over_all_pop=int, members=[guy2]]}, members=[guy1,guy2,guy3]]}
 
-
+if memory_collection == True:
+    creature_memory = int(process.memory_info().rss / 1e6) - temp_memory
 
 while life != {}:
     try:
         for i in range(0,run_time):
-            tracemalloc.start()
             range = len(life)
             keys = list(life.keys())
             keys.sort(key=lambda c: life[c].list_priority+random.randint(-2,2), reverse=True)
-            do_big_break = False
+
+
+            if memory_collection == True:
+                temp_memory = int(process.memory_info().rss / 1e6)
             for id in keys:
                 try:
                     life[id].cycle()
                 except KeyError:
                     pass
+            if memory_collection == True:
+                creature_memory += int(process.memory_info().rss / 1e6) - temp_memory
+                temp_memory = int(process.memory_info().rss / 1e6)
             for col in area_map:
                 for cell in col:
                     cell.grow()
 
-            print(f"\n{i}\namount of pop {len(life)}\n",end ='')
 
-            current, peak = tracemalloc.get_traced_memory()
-            print(f"Current memory usage: {current / 1e6:.2f} MB; Peak: {peak / 1e6:.2f} MB")
+            #add carnisuars at year 500
+            if i == 3:
+                species_name = "meaty ryans"
+                for i2 in range(0,initial_pop):
+                    id = gen_id()
+                    map = area_map[random.randint(0, map_width - 1)][random.randint(0, map_height - 1)]
+                    creature = Creature(id, life, species_name, species, map, "base_strain", None, False)
+                    # def __init__(self, id, parent_list, species_name, species, location, subspecies_name, parent=None, speciate=True):
+                    life[id] = creature
+                    species[species_name][2][id] = creature
+                    species[species_name][1]["base_strain"][1][id] = creature
+                    species[species_name][1]["base_strain"][0] += 1
+                    life[id].traits.diet_scale = 100
 
-            process = psutil.Process(os.getpid())
-            # inside your loop
-            print(f"Memory used: {process.memory_info().rss / 1e6:.2f} MB")
+
+            print(f"\n{i}\namount of pop {len(life)}\n", end='')
+
+
+            if memory_collection == True:
+                map_memory = int(process.memory_info().rss / 1e6) - temp_memory
+                process = psutil.Process(os.getpid())
+                # inside your loop
+                print(f"Memory used: {process.memory_info().rss / 1e6:.2f} MB")
 
             if i  % display_per_year == 0:
+                if memory_collection == True:
+                    temp_memory = int(process.memory_info().rss / 1e6)
                 s(sleep)
                 #data = np.array([[cell.plants for cell in row] for row in area_map])
                 #plot_data(data, "amount of plants")
@@ -144,7 +176,8 @@ while life != {}:
 
                 plot_data(data1, "Terrain Map", data2, "Number of Inhabitants", plots, time, topn_dict=plots_for_bar, species=species)
 
-            tracemalloc.stop()
+                if memory_collection == True:
+                    plot_memory += int(process.memory_info().rss / 1e6) - temp_memory
 
         break
     except KeyboardInterrupt:
@@ -178,6 +211,14 @@ for i in life.keys():
 print(f"average age all species: {av / len(life)}")
 print(f"oldest creature alive: {oldest}")
 
-process = psutil.Process(os.getpid())
-# inside your loop
-print(f"Memory used: {process.memory_info().rss / 1e6:.2f} MB")
+if memory_collection == True:
+    process = psutil.Process(os.getpid())
+    # inside your loop
+    print(f"Memory used: {process.memory_info().rss / 1e6:.2f} MB")
+
+    other_memory = int(process.memory_info().rss / 1e6) - (map_memory + creature_memory + plot_memory)
+
+    print(f"MAP MEMORY USAGE: {map_memory:.2f} MB")
+    print(f"CREATURE MEMORY USAGE: {creature_memory:.2f} MB")
+    print(f"PLOT MEMORY USAGE: {plot_memory:.2f} MB")
+    print(f"RANDOM MEMORY USAGE: {other_memory:.2f} MB")

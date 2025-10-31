@@ -45,7 +45,6 @@ class Traits():
 
                 species[species_name][1][str(name)] = [1, {self.creature.id: self.creature}]
                 self.creature.subspecies_name = name
-                self.creature.id_for_subspecies = 0
                 #print(f"{str(name)} created")
                 #subspecies = {joe_suaruas_with_horns: [over_all_pop = int, members = [guy2]]}
 
@@ -111,7 +110,7 @@ class Traits():
             grand_multiplyer_pos = 1.5
             grand_multiplyer_neg = .5
 
-        creature.juvenile_age = 3
+        creature.adult_age = 3
         creature.elderly_age = 8
         creature.lifespan = 10
         creature.size = 15 * grand_multiplyer_pos

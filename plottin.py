@@ -1,11 +1,10 @@
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 import numpy as np
+import gc
 
 def plot_data(data1, title1, data2, title2, lines_data, x, line_labels=None, title3="Species Population", topn_dict=None, n_top=5, species=None):
 
-
-    plt.close('all')
 
     #for amount of breaking you want your computer to do
     breaking1 = True
@@ -114,3 +113,6 @@ def plot_data(data1, title1, data2, title2, lines_data, x, line_labels=None, tit
             # subsequent runs, just update/redraw
             plot_data.fig.canvas.draw_idle()
             plot_data.fig.canvas.flush_events()
+
+
+

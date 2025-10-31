@@ -5,6 +5,17 @@ from id_getter import gen_id
 from group_def import Group
 
 class Creature():
+    __slots__ = (
+        "age", "age_group", "adult_age", "elderly_age", "lifespan", "size",
+        "nutritinal_need", "nutritinal_output", "malnurished", "list_priority",
+        "speed", "hiding_power", "sight_power",
+        "aquatic_speed", "regular_speed", "mountainous_speed",
+        "sharp_attacking_power", "blunt_attacking_power", "piercing_attacking_power",
+        "pure_defensive_power", "blunt_defensive_power", "reach",
+        "attack_moves", "combat_effects", "tempature_resistance",
+        "group", "parent", "location", "species_name", "species", "subspecies_name",
+        "id", "parent_list", "traits"
+    )
     def __init__(self, id, parent_list, species_name, species, location, subspecies_name, parent=None, speciate=True):
         #these are all the basic stat templates and are subject to change
         self.age = 0
