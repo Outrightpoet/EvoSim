@@ -9,7 +9,12 @@ import numpy as np
 from plottin import plot_data
 from map_maker import make_map_terrain
 
+
 memory_collection = True
+time_tracking = True
+
+if time_tracking:
+    from time import perf_counter
 
 if memory_collection == True:
     import tracemalloc
@@ -19,16 +24,17 @@ if memory_collection == True:
     creature_memory = 0
     plot_memory = 0
     process = psutil.Process(os.getpid())
-    # inside your loop
+    initial_memory = int(process.memory_info().rss / 1e6)
     print(f"Memory used: {process.memory_info().rss / 1e6:.2f} MB")
     #control panel
     temp_memory = int(process.memory_info().rss / 1e6)
 
 map_width = 30
 map_height = 30
-initial_pop = 10
-run_time = 100001
+initial_pop = 100
+run_time = 1001 #100001
 display_per_year = 100
+
 
 area_map = []
 
@@ -45,10 +51,8 @@ scattered_map = []
 make_map_terrain(area_map)
 
 if memory_collection == True:
-    map_memory = int(process.memory_info().rss / 1e6) - temp_memory
     process = psutil.Process(os.getpid())
-    # inside your loop
-    print(f"Memory used: {process.memory_info().rss / 1e6:.2f} MB")
+    map_memory = int(process.memory_info().rss / 1e6) - temp_memory
     temp_memory = int(process.memory_info().rss / 1e6)
 
 first_species_name = name_make()
@@ -83,35 +87,60 @@ for i in range(0,initial_pop):
 #life = {joe_suaruas: [overall_pop_val=int, subspecies={joe_suaruas_with_horns: [over_all_pop=int, members=[guy2]]}, members=[guy1,guy2,guy3]]}
 
 if memory_collection == True:
+    process = psutil.Process(os.getpid())
     creature_memory = int(process.memory_info().rss / 1e6) - temp_memory
 
 while life != {}:
     try:
         for i in range(0,run_time):
-            range = len(life)
+
             keys = list(life.keys())
             keys.sort(key=lambda c: life[c].list_priority+random.randint(-2,2), reverse=True)
 
 
             if memory_collection == True:
+                process = psutil.Process(os.getpid())
                 temp_memory = int(process.memory_info().rss / 1e6)
+
+            if i == 0 or i == 1000:
+                from time import perf_counter
+                start_time = perf_counter()
+                creature_time1 = creature_time2 = 0
+
             for id in keys:
                 try:
                     life[id].cycle()
                 except KeyError:
                     pass
+
+            if i == 0 or i == 1000:
+                end_time = perf_counter()
+                if i == 0:
+                    creature_time1 = end_time - start_time
+                else:
+                    creature_time2 = end_time - start_time
+
             if memory_collection == True:
+                process = psutil.Process(os.getpid())
                 creature_memory += int(process.memory_info().rss / 1e6) - temp_memory
                 temp_memory = int(process.memory_info().rss / 1e6)
+
             for col in area_map:
                 for cell in col:
                     cell.grow()
 
+            if memory_collection == True:
+                process = psutil.Process(os.getpid())
+                map_memory = int(process.memory_info().rss / 1e6) - temp_memory
+                print(f"Memory used: {process.memory_info().rss / 1e6:.2f} MB")
+
 
             #add carnisuars at year 500
-            if i == 3:
-                species_name = "meaty ryans"
-                for i2 in range(0,initial_pop):
+            if i == 500:
+                add_pop = 100
+                species_name = "meaty_ryans"
+                species["meaty_ryans"] = [add_pop, {"base_strain": [add_pop, {}]}, {}]
+                for i2 in range(1,add_pop):
                     id = gen_id()
                     map = area_map[random.randint(0, map_width - 1)][random.randint(0, map_height - 1)]
                     creature = Creature(id, life, species_name, species, map, "base_strain", None, False)
@@ -126,14 +155,9 @@ while life != {}:
             print(f"\n{i}\namount of pop {len(life)}\n", end='')
 
 
-            if memory_collection == True:
-                map_memory = int(process.memory_info().rss / 1e6) - temp_memory
-                process = psutil.Process(os.getpid())
-                # inside your loop
-                print(f"Memory used: {process.memory_info().rss / 1e6:.2f} MB")
-
             if i  % display_per_year == 0:
                 if memory_collection == True:
+                    process = psutil.Process(os.getpid())
                     temp_memory = int(process.memory_info().rss / 1e6)
                 s(sleep)
                 #data = np.array([[cell.plants for cell in row] for row in area_map])
@@ -177,6 +201,7 @@ while life != {}:
                 plot_data(data1, "Terrain Map", data2, "Number of Inhabitants", plots, time, topn_dict=plots_for_bar, species=species)
 
                 if memory_collection == True:
+                    process = psutil.Process(os.getpid())
                     plot_memory += int(process.memory_info().rss / 1e6) - temp_memory
 
         break
@@ -210,15 +235,20 @@ for i in life.keys():
         oldest = life[i].age
 print(f"average age all species: {av / len(life)}")
 print(f"oldest creature alive: {oldest}")
+print(f"ending pop: {len(life)}")
 
 if memory_collection == True:
     process = psutil.Process(os.getpid())
-    # inside your loop
     print(f"Memory used: {process.memory_info().rss / 1e6:.2f} MB")
 
-    other_memory = int(process.memory_info().rss / 1e6) - (map_memory + creature_memory + plot_memory)
+    other_memory = int(process.memory_info().rss / 1e6) - (map_memory + creature_memory + plot_memory + initial_memory)
 
+    print(f"INITIAL MEMORY USAGE: {initial_memory:.2f} MB")
     print(f"MAP MEMORY USAGE: {map_memory:.2f} MB")
     print(f"CREATURE MEMORY USAGE: {creature_memory:.2f} MB")
     print(f"PLOT MEMORY USAGE: {plot_memory:.2f} MB")
     print(f"RANDOM MEMORY USAGE: {other_memory:.2f} MB")
+
+    print(f"Time taken: {creature_time1:.8f} seconds")
+    print(f"Time taken: {creature_time2:.8f} seconds")
+

@@ -64,28 +64,28 @@ class Location():
             }
         elif new_terrain == "plains":
             self.max_foods = {
-                "plants": [20, 40, 60],
-                "leaves": [20, 40, 60],
-                "fruits": [10, 30, 50],
-                "nuts": [20, 30, 40],
-                "fungi": [50, 40, 30],
-                "insects": [50, 20, 10],
-                "seeds": [30],
-                "roots": [20],
+                "plants": [30, 40, 0],
+                "leaves": [30, 40, 0],
+                "fruits": [5, 0, 0],
+                "nuts": [10, 0, 0],
+                "fungi": [10, 5, 0],
+                "insects": [20, 10, 0],
+                "seeds": [20],
+                "roots": [10],
                 "detritus": [30],
                 "fish": [0]
             }
         elif new_terrain == "forests":
             self.max_foods = {
-                "plants": [40, 60, 80],
-                "leaves": [40, 60, 80],
-                "fruits": [20, 40, 70],
-                "nuts": [20, 30, 40],
-                "fungi": [50, 40, 40],
-                "insects": [50, 20, 30],
-                "seeds": [40],
-                "roots": [40],
-                "detritus": [40],
+                "plants": [20, 40, 60],
+                "leaves": [20, 40, 60],
+                "fruits": [10, 20, 40],
+                "nuts": [10, 20, 30],
+                "fungi": [30, 20, 20],
+                "insects": [25, 10, 15],
+                "seeds": [20],
+                "roots": [20],
+                "detritus": [30],
                 "fish": [0]
             }
         elif new_terrain == "mountains":

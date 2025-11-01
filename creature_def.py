@@ -119,11 +119,10 @@ class Creature():
             self.age_group = "elder"
             self.traits.get_stats(self, self.age_group)
 
-        if self.age >= self.elderly_age:
-            ran = random.randint(1,100)
-            if ran < (50 * (self.age/self.lifespan)):
-                self.die()
-                return False
+        ran = random.randint(1,100)
+        if self.age >= self.elderly_age and ran < (50 * (self.age/self.lifespan)):
+            self.die()
+            return False
         return True
 
 
@@ -170,6 +169,7 @@ class Creature():
 
 
     def die(self, decompose=None):
+        #self.parent = None
         if decompose == None:
             self.location.foods["detritus"][0] += self.nutritinal_output / 10
         else:
@@ -214,5 +214,4 @@ class Creature():
             col += random.randint(-self.speed, self.speed)
             if self.try_to_move(row, col):
                 break
-
 
