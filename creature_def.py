@@ -1,8 +1,8 @@
 from traits_def import Traits
-import random
 from name_gen import name_make
 from id_getter import gen_id
 from group_def import Group
+from random_store import get_randint_zero_hundred, get_randint_zero_thirty, get_randint_neg_one_one
 
 class Creature():
     __slots__ = (
@@ -10,8 +10,7 @@ class Creature():
         "nutritinal_need", "nutritinal_output", "malnurished", "list_priority",
         "speed", "hiding_power", "sight_power",
         "aquatic_speed", "regular_speed", "mountainous_speed",
-        "sharp_attacking_power", "blunt_attacking_power", "piercing_attacking_power",
-        "pure_defensive_power", "blunt_defensive_power", "reach",
+        "sharp_attacking_power", "blunt_attacking_power", "piercing_attacking_power", "reach",
         "attack_moves", "combat_effects", "tempature_resistance",
         "group", "parent", "location", "species_name", "species", "subspecies_name",
         "id", "parent_list", "traits"
@@ -41,9 +40,6 @@ class Creature():
         self.sharp_attacking_power = 5
         self.blunt_attacking_power = 5
         self.piercing_attacking_power = 5
-
-        self.pure_defensive_power = 1
-        self.blunt_defensive_power = 1
 
         self.reach = 1
 
@@ -92,23 +88,36 @@ class Creature():
 
         pop_needed_for_divergence = 10
 
-        if self.species[self.species_name][1][self.subspecies_name][0] > pop_needed_for_divergence and self.subspecies_name != "base_strain":
+        if len(self.species[self.species_name][1][self.subspecies_name][1]) >= pop_needed_for_divergence and self.subspecies_name != "base_strain":
 
             name = name_make()
-            creatures_moveing = dict(self.species[self.species_name][1][self.subspecies_name][1])
-
-            del self.species[self.species_name][1][self.subspecies_name][1]
-            self.species[name] = [pop_needed_for_divergence,{"base_strain": [pop_needed_for_divergence, creatures_moveing]}, creatures_moveing]
+            creatures_moveing = {}
             old_species = self.species_name
             old_subspecies = self.subspecies_name
 
+            for i in self.species[self.species_name][1][self.subspecies_name][1]:
+                creatures_moveing[i] = self.species[self.species_name][1][self.subspecies_name][1][i]
+
+
+            self.species[self.species_name][0] -= pop_needed_for_divergence
+            self.species[self.species_name][1][self.subspecies_name][0] -= pop_needed_for_divergence
+
+
+            self.species[name] = [pop_needed_for_divergence,{"base_strain": [pop_needed_for_divergence, creatures_moveing]}, creatures_moveing]
+
             for creature in self.species[name][2].values():
-                creature.species[old_species][1][old_subspecies][0] -= 1
-                creature.species[old_species][0] -= 1
+                del self.species[old_species][2][creature.id]
                 creature.species_name = name
                 creature.subspecies_name = "base_strain"
 
             self.species[old_species][1][old_subspecies] = [0, [], f"Seperated to {name}"]
+
+            if self.species[old_species][0] == 0:
+                del self.species[old_species]
+
+
+
+
 
     def health_check(self):
         self.age += 1
@@ -119,7 +128,7 @@ class Creature():
             self.age_group = "elder"
             self.traits.get_stats(self, self.age_group)
 
-        ran = random.randint(1,100)
+        ran = get_randint_zero_hundred()
         if self.age >= self.elderly_age and ran < (50 * (self.age/self.lifespan)):
             self.die()
             return False
@@ -128,43 +137,40 @@ class Creature():
 
     def find_food(self):
 
-        def check_starvation():
-            if self.malnurished == True:
-                self.die()
+        food_avalible = self.location.check_for_food(self.traits.diet, self.nutritinal_need, self)
 
-            else:
-                self.malnurished = True
-
-        def check_for_freaky():
+        if food_avalible == True:
             if self.malnurished == True:
                 self.malnurished = False
             else:
                 if self.age_group == "adult":
                     self.freaky()
-
-        food_avalible = self.location.check_for_food(self.traits.diet, self.nutritinal_need, self)
-
-        if food_avalible == True:
-            check_for_freaky()
-            if random.randint(0,30) == 30:
+            if get_randint_zero_thirty == 30:
                 self.random_move()
         else:
             self.random_move()
             if self.location.check_for_food(self.traits.diet, self.nutritinal_need, self):
-                check_for_freaky()
+                if self.malnurished == True:
+                    self.malnurished = False
+                else:
+                    if self.age_group == "adult":
+                        self.freaky()
             else:
-                check_starvation()
+                if self.malnurished == True:
+                    self.die()
+                else:
+                    self.malnurished = True
 
 
     def freaky(self):
         id = gen_id()
         child = Creature(id, self.parent_list, self.species_name, self.species, self.location, self.subspecies_name, self)
         # def __init__(self, id, parent_list, species_name, species, location, subspecies_name, parent=None, speciate=True):
-        self.parent_list[id] = child
-        self.species[self.species_name][2][id] = child
-        self.species[self.species_name][0] += 1
-        self.species[self.species_name][1][self.subspecies_name][1][id] = child
-        self.species[self.species_name][1][self.subspecies_name][0] += 1
+        child.parent_list[id] = child
+        child.species[child.species_name][2][id] = child
+        child.species[child.species_name][0] += 1
+        child.species[child.species_name][1][child.subspecies_name][1][id] = child
+        child.species[child.species_name][1][child.subspecies_name][0] += 1
         child.check_and_split()
 
 
@@ -177,19 +183,17 @@ class Creature():
 
         del self.parent_list[self.id]
         del self.location.inhabitants[self.id]
+
         if len(self.species[self.species_name][2]) == 1:
-            del self.species[self.species_name]
             print("species extinction")
+            del self.species[self.species_name]
+
         else:
             self.species[self.species_name][0] -= 1
             self.species[self.species_name][1][self.subspecies_name][0] -= 1
-            if self.subspecies_name == "base_strain":
-                del self.species[self.species_name][2][self.id]
-            else:
-                del self.species[self.species_name][1][self.subspecies_name][1][self.id]
-                del self.species[self.species_name][2][self.id]
+            del self.species[self.species_name][1][self.subspecies_name][1][self.id]
+            del self.species[self.species_name][2][self.id]
             #delet list, parent list, species list, subspecies list, location inhabitant
-
 
     def try_to_move(self, row, col):
         try:
@@ -210,8 +214,8 @@ class Creature():
     def random_move(self):
         while True:
             row, col = self.location.row_col
-            row += random.randint(-self.speed, self.speed)
-            col += random.randint(-self.speed, self.speed)
+            row += get_randint_neg_one_one()
+            col += get_randint_neg_one_one()
             if self.try_to_move(row, col):
                 break
 

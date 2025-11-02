@@ -1,4 +1,4 @@
-import random
+from random_store import get_randint_zero_one
 from hunt_def import hunt
 
 class Location():
@@ -15,10 +15,10 @@ class Location():
             "insects": [25, 25, 25],
 
             # Single abundance / low only
-            "seeds": [25],
-            "roots": [25],
-            "detritus": [25],
-            "fish": [25],
+            "seeds": [25, 0, 0],
+            "roots": [25, 0, 0],
+            "detritus": [25, 0, 0],
+            "fish": [25, 0, 0],
         }
 
         # Maximum values
@@ -57,10 +57,10 @@ class Location():
                 "nuts": [0, 0, 0],
                 "fungi": [20, 10, 0],
                 "insects": [60, 30, 0],
-                "seeds": [10],
-                "roots": [10],
-                "detritus": [20],
-                "fish": [80]
+                "seeds": [10, 5, 0],
+                "roots": [10, 5, 0],
+                "detritus": [20, 0, 0],
+                "fish": [80, 80, 80]
             }
         elif new_terrain == "plains":
             self.max_foods = {
@@ -70,10 +70,10 @@ class Location():
                 "nuts": [10, 0, 0],
                 "fungi": [10, 5, 0],
                 "insects": [20, 10, 0],
-                "seeds": [20],
-                "roots": [10],
-                "detritus": [30],
-                "fish": [0]
+                "seeds": [20, 10, 0],
+                "roots": [10, 10, 0],
+                "detritus": [30, 0, 0],
+                "fish": [0, 0, 0]
             }
         elif new_terrain == "forests":
             self.max_foods = {
@@ -83,10 +83,10 @@ class Location():
                 "nuts": [10, 20, 30],
                 "fungi": [30, 20, 20],
                 "insects": [25, 10, 15],
-                "seeds": [20],
-                "roots": [20],
-                "detritus": [30],
-                "fish": [0]
+                "seeds": [20, 10, 0],
+                "roots": [20, 10, 0],
+                "detritus": [30, 0, 0],
+                "fish": [0, 0, 0]
             }
         elif new_terrain == "mountains":
             self.max_foods = {
@@ -96,10 +96,10 @@ class Location():
                 "nuts": [15, 10, 20],
                 "fungi": [20, 10, 10],
                 "insects": [20, 10, 10],
-                "seeds": [10],
-                "roots": [5],
-                "detritus": [10],
-                "fish": [0]
+                "seeds": [10, 10, 0],
+                "roots": [5, 10, 0],
+                "detritus": [10, 0, 0],
+                "fish": [0, 0, 0]
             }
         elif new_terrain == "savanna":
             self.max_foods = {
@@ -109,10 +109,10 @@ class Location():
                 "nuts": [0, 0, 0],
                 "fungi": [0, 0, 0],
                 "insects": [10, 10, 5],
-                "seeds": [5],
-                "roots": [0],
-                "detritus": [10],
-                "fish": [0]
+                "seeds": [5, 2, 0],
+                "roots": [0, 0, 0],
+                "detritus": [10, 0, 0],
+                "fish": [0, 0, 0]
             }
         elif new_terrain == "desert":
             self.max_foods = {
@@ -122,10 +122,10 @@ class Location():
                 "nuts": [0, 0, 0],
                 "fungi": [0, 0, 0],
                 "insects": [5, 5, 0],
-                "seeds": [0],
-                "roots": [0],
-                "detritus": [5],
-                "fish": [0]
+                "seeds": [0, 0, 0],
+                "roots": [0, 0, 0],
+                "detritus": [5, 0, 0],
+                "fish": [0, 0, 0]
             }
 
     def grow(self):
@@ -134,7 +134,7 @@ class Location():
                 for i in range(0,len(self.foods[item])-1):
                     self.foods[item][i] += self.max_foods[item][i] / 10
                     if self.foods[item][i] == 0:
-                        if random.randint(0,1) == 1:
+                        if get_randint_zero_one == 1:
                             self.foods[item][i] = 5
                     elif self.foods[item][i] > self.max_foods[item][i]:
                         self.foods[item][i] = self.max_foods[item][i]
@@ -149,18 +149,16 @@ class Location():
         height_key = foods[len(foods)-1]
         foods = list(foods)
         foods.pop(len(foods)-1)
-        random.shuffle(foods)
+        #random.shuffle(foods)
 
         for food_group in foods:
             if food_group != "creatures":
-                try:
-                    if self.foods[food_group][height_key] >= nutritinal_need:
-                        self.foods[food_group][height_key] -= nutritinal_need
-                        return True
-                except IndexError:
-                    if self.foods[food_group][0] >= nutritinal_need:
-                        self.foods[food_group][0] -= nutritinal_need
-                        return True
+
+                if self.foods[food_group][height_key] >= nutritinal_need:
+                    self.foods[food_group][height_key] -= nutritinal_need
+                    return True
+
+
             else:
                 possible_eating_list = []
                 for target in self.inhabitants.values():

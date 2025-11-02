@@ -1,10 +1,10 @@
 
 import random
+from random_store import get_randint_neg_ten_ten
 from location_tiles import Location
 from creature_def import Creature
 from name_gen import name_make
 from id_getter import gen_id
-from time import sleep as s
 import numpy as np
 from plottin import plot_data
 from map_maker import make_map_terrain
@@ -14,7 +14,11 @@ memory_collection = True
 time_tracking = True
 
 if time_tracking:
-    from time import perf_counter
+    import cProfile, pstats
+    import io
+
+    pr = cProfile.Profile()
+    pr.enable()
 
 if memory_collection == True:
     import tracemalloc
@@ -32,7 +36,7 @@ if memory_collection == True:
 map_width = 30
 map_height = 30
 initial_pop = 100
-run_time = 1001 #100001
+run_time = 10001 #100001
 display_per_year = 100
 
 
@@ -92,42 +96,33 @@ if memory_collection == True:
 
 while life != {}:
     try:
+
         for i in range(0,run_time):
 
             keys = list(life.keys())
-            keys.sort(key=lambda c: life[c].list_priority+random.randint(-2,2), reverse=True)
+            keys.sort(key=lambda c: life[c].list_priority+get_randint_neg_ten_ten(), reverse=True)
 
 
             if memory_collection == True:
                 process = psutil.Process(os.getpid())
                 temp_memory = int(process.memory_info().rss / 1e6)
 
-            if i == 0 or i == 1000:
-                from time import perf_counter
-                start_time = perf_counter()
-                creature_time1 = creature_time2 = 0
-
+            cycle = Creature.cycle
             for id in keys:
                 try:
-                    life[id].cycle()
+                    cycle(life[id])
                 except KeyError:
                     pass
-
-            if i == 0 or i == 1000:
-                end_time = perf_counter()
-                if i == 0:
-                    creature_time1 = end_time - start_time
-                else:
-                    creature_time2 = end_time - start_time
 
             if memory_collection == True:
                 process = psutil.Process(os.getpid())
                 creature_memory += int(process.memory_info().rss / 1e6) - temp_memory
                 temp_memory = int(process.memory_info().rss / 1e6)
 
+            grow = Location.grow
             for col in area_map:
                 for cell in col:
-                    cell.grow()
+                    grow(cell)
 
             if memory_collection == True:
                 process = psutil.Process(os.getpid())
@@ -156,10 +151,10 @@ while life != {}:
 
 
             if i  % display_per_year == 0:
+
                 if memory_collection == True:
                     process = psutil.Process(os.getpid())
                     temp_memory = int(process.memory_info().rss / 1e6)
-                s(sleep)
                 #data = np.array([[cell.plants for cell in row] for row in area_map])
                 #plot_data(data, "amount of plants")
                 data1 = np.array([[cell.terrain_value for cell in row] for row in area_map])
@@ -170,12 +165,12 @@ while life != {}:
                     if i2 in plots:
                         if species[i2][0] <= max_value_y:
                             plots[i2].append(species[i2][0])
+                        elif species[i2][0] <= 0:
+                            del plots[i2]
                         else:
                             plots[i2].append(max_value_y)
                     else:
-                        plots[i2] = []
-                        zeros = [0] * (len(time)-1)
-                        plots[i2].extend(zeros)
+                        plots[i2] = [0] * (len(time)-1)
                         if species[i2][0] <= max_value_y:
                             plots[i2].append(species[i2][0])
                         else:
@@ -215,10 +210,12 @@ print(f"\nbroke\n")
 for i in species.keys():
     print(i, end = " ")
     print(species[i][0])
+    if species[i][0] != len(species[i][2]):
+        print(f"INACCURACY ERROR BY: {len(species[i][2])-species[i][0]}")
     print(f"id: {species[i][2][list(species[i][2])[0]].id}")
+    for trait in species[i][2][list(species[i][2])[0]].traits.traits:
+        print(trait)
     print(f"diet: {species[i][2][list(species[i][2])[0]].traits.diet}")
-    print(f"diet scale: {species[i][2][list(species[i][2])[0]].traits.diet_scale}")
-    print(f"diet range: {species[i][2][list(species[i][2])[0]].traits.diet_range}")
     print()
 
 
@@ -249,6 +246,11 @@ if memory_collection == True:
     print(f"PLOT MEMORY USAGE: {plot_memory:.2f} MB")
     print(f"RANDOM MEMORY USAGE: {other_memory:.2f} MB")
 
-    print(f"Time taken: {creature_time1:.8f} seconds")
-    print(f"Time taken: {creature_time2:.8f} seconds")
+if time_tracking:
+
+    pr.disable()
+    s = io.StringIO()
+    ps = pstats.Stats(pr, stream=s).sort_stats("cumtime")
+    ps.print_stats(15)  # top 15 slowest functions
+    print(s.getvalue())
 
