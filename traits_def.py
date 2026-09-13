@@ -202,9 +202,9 @@ class Traits():
         creature.regular_speed = int(5 * grand_multiplyer_neg) * (1 + self.long_legs / 100) * (1 + self.tail / 150) / (1 + self.thick_skin / 300) / (1 + self.bone_plates / 100) / (1 + self.scales / 200)
         creature.mountainous_speed = int(2 * grand_multiplyer_neg) * (1 + self.hoofs / 50) / (1 + self.thick_skin / 300) / (1 + self.bone_plates / 75) / (1 + self.scales / 100)
 
-        creature.sharp_attacking_power = 5 * grand_multiplyer_pos * (1 + self.claws / 200)  * (1 + self.sharp_teeth / 150) * (1 + self.horns / 300) * (1 + self.dense_muscles / 200)
-        creature.blunt_attacking_power = 5 * grand_multiplyer_pos * (1 + self.club_tail / 100) * (1 + self.dense_muscles / 200)
-        creature.piercing_attacking_power = 5 * grand_multiplyer_pos * (1 + self.horns / 100) * (1 + self.dense_muscles / 200)
+        creature.sharp_attacking_power = 5 * grand_multiplyer_pos * (1 + self.claws / 200)  * (1 + self.sharp_teeth / 150) * (1 + self.horns / 300) * (1 + self.dense_muscles / 100)
+        creature.blunt_attacking_power = 5 * grand_multiplyer_pos * (1 + self.club_tail / 100) * (1 + self.dense_muscles / 100)
+        creature.piercing_attacking_power = 5 * grand_multiplyer_pos * (1 + self.horns / 100) * (1 + self.dense_muscles / 100)
 
         creature.reach = 1 * (creature.size/15) * (1 + self.horns / 50)
 

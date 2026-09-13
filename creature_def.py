@@ -88,7 +88,7 @@ class Creature():
 
         pop_needed_for_divergence = 10
 
-        if len(self.species[self.species_name][1][self.subspecies_name][1]) >= pop_needed_for_divergence and self.subspecies_name != "base_strain":
+        if self.subspecies_name != "base_strain" and len(self.species[self.species_name][1][self.subspecies_name][1]) >= pop_needed_for_divergence:
 
             name = name_make()
             creatures_moveing = {}
@@ -185,7 +185,6 @@ class Creature():
         del self.location.inhabitants[self.id]
 
         if len(self.species[self.species_name][2]) == 1:
-            print("species extinction")
             del self.species[self.species_name]
 
         else:

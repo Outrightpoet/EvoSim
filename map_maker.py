@@ -1,53 +1,60 @@
 import random
+from collections import deque
+
 
 def make_map_terrain(area_map):
-    scattered_map = []
+    terrain_list = ["marshes", "plains", "forests", "mountains", "savanna", "desert"]
+    terrain_values = {"marshes": 0, "plains": 1, "forests": 2, "mountains": 3, "savanna": 4, "desert": 5}
 
-    for col in area_map:
-        for cell in col:
-            scattered_map.append(cell)
+    # Set weights: higher means more likely to appear
+    terrain_weights = {
+        "marshes": 10,
+        "plains": 20,
+        "forests": 15,
+        "mountains": 10,
+        "savanna": 8,
+        "desert": 7
+    }
 
-    random.shuffle(scattered_map)
+    rows = len(area_map)
+    cols = len(area_map[0])
 
-    for cell in scattered_map:
-        marshes = 2
-        plains = 5
-        forests = 4
-        mountains = 3
-        savanna = 2
-        desert = 2
+    assigned = [[False for _ in range(cols)] for _ in range(rows)]
 
-        for count1, row in enumerate(range(cell.row_col[0] - 3, cell.row_col[0] + 4)):
-            for count2, cell1 in enumerate(range(cell.row_col[1] - 3, cell.row_col[1] + 4)):
-                try:
-                    if area_map[row][cell1].terrain == "marshes":
-                        marshes += 100 - ((count1+count2) * 10)
-                    elif area_map[row][cell1].terrain == "plains":
-                        plains += 100 - ((count1+count2) * 10)
-                    elif area_map[row][cell1].terrain == "forests":
-                        forests += 100 - ((count1+count2) * 10)
-                    elif area_map[row][cell1].terrain == "mountains":
-                        mountains += 100 - ((count1+count2) * 10)
-                    elif area_map[row][cell1].terrain == "savanna":
-                        savanna += 100 - ((count1+count2) * 10)
-                    elif area_map[row][cell1].terrain == "desert":
-                        desert += 100 - ((count1+count2) * 10)
-                except IndexError:
-                    pass
+    def weighted_choice(weight_dict):
+        """Return a terrain based on weights"""
+        total = sum(weight_dict.values())
+        rand_val = random.randint(1, total)
+        cumulative = 0
+        for terrain, weight in weight_dict.items():
+            cumulative += weight
+            if rand_val <= cumulative:
+                return terrain
 
+    def grow_terrain(r, c, terrain, max_growth):
+        queue = deque()
+        queue.append((r, c))
+        assigned[r][c] = True
+        area_map[r][c].change_terrain(terrain, terrain_values[terrain])
+        growth_count = 0
 
+        while queue and growth_count < max_growth:
+            cr, cc = queue.popleft()
+            for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                nr, nc = cr + dr, cc + dc
+                if 0 <= nr < rows and 0 <= nc < cols and not assigned[nr][nc]:
+                    if random.random() < 0.7:  # chance to expand
+                        assigned[nr][nc] = True
+                        area_map[nr][nc].change_terrain(terrain, terrain_values[terrain])
+                        queue.append((nr, nc))
+                        growth_count += 1
 
-                average = (marshes + plains + forests + mountains + savanna + desert)
-                ran = random.randint(0, average)
-                if ran < marshes:
-                    cell.change_terrain("marshes", 0)
-                elif ran < plains + marshes:
-                    cell.change_terrain("plains", 1)
-                elif ran < forests + plains + marshes:
-                    cell.change_terrain("forests", 2)
-                elif ran < mountains + forests + plains + marshes:
-                    cell.change_terrain("mountains", 3)
-                elif ran < savanna + mountains + forests + plains + marshes:
-                    cell.change_terrain("savanna", 4)
-                elif ran < desert + savanna + mountains + forests + plains + marshes:
-                    cell.change_terrain("desert", 5)
+    # Fill map
+    all_cells = [(r, c) for r in range(rows) for c in range(cols)]
+    random.shuffle(all_cells)
+
+    for r, c in all_cells:
+        if not assigned[r][c]:
+            terrain = weighted_choice(terrain_weights)
+            max_growth = random.randint(5, 50)  # variable cluster size
+            grow_terrain(r, c, terrain, max_growth)

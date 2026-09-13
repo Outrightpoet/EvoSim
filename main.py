@@ -36,8 +36,11 @@ if memory_collection == True:
 map_width = 30
 map_height = 30
 initial_pop = 100
-run_time = 10001 #100001
+run_time = 100001 #100001
 display_per_year = 100
+plant_intro = 0
+creature_intro = 0
+meat_eater_intro = 500
 
 
 area_map = []
@@ -78,23 +81,11 @@ life = {}
 #start of real code
 
 
-
-for i in range(0,initial_pop):
-    id = gen_id()
-    map = area_map[random.randint(0, map_width - 1)][random.randint(0, map_height - 1)]
-    creature = Creature(id, life, first_species_name, species, map, "base_strain", None, False)
-    #def __init__(self, id, parent_list, species_name, species, location, subspecies_name, parent=None, speciate=True):
-    life[id] = creature
-    species[first_species_name][2][id] = creature
-    species[first_species_name][1]["base_strain"][1][id] = creature
-    species[first_species_name][1]["base_strain"][0] += 1
-#life = {joe_suaruas: [overall_pop_val=int, subspecies={joe_suaruas_with_horns: [over_all_pop=int, members=[guy2]]}, members=[guy1,guy2,guy3]]}
-
 if memory_collection == True:
     process = psutil.Process(os.getpid())
     creature_memory = int(process.memory_info().rss / 1e6) - temp_memory
 
-while life != {}:
+while True:
     try:
 
         for i in range(0,run_time):
@@ -129,9 +120,21 @@ while life != {}:
                 map_memory = int(process.memory_info().rss / 1e6) - temp_memory
                 print(f"Memory used: {process.memory_info().rss / 1e6:.2f} MB")
 
+            #add creatures at year creature_intro
+            if i == creature_intro:
+                for i in range(0, initial_pop):
+                    id = gen_id()
+                    map = area_map[random.randint(0, map_width - 1)][random.randint(0, map_height - 1)]
+                    creature = Creature(id, life, first_species_name, species, map, "base_strain", None, False)
+                    # def __init__(self, id, parent_list, species_name, species, location, subspecies_name, parent=None, speciate=True):
+                    life[id] = creature
+                    species[first_species_name][2][id] = creature
+                    species[first_species_name][1]["base_strain"][1][id] = creature
+                    species[first_species_name][1]["base_strain"][0] += 1
+                    # life = {joe_suaruas: [overall_pop_val=int, subspecies={joe_suaruas_with_horns: [over_all_pop=int, members=[guy2]]}, members=[guy1,guy2,guy3]]}
 
-            #add carnisuars at year 500
-            if i == 500:
+            #add carnisuars at year meat_eater_intro
+            if i == meat_eater_intro:
                 add_pop = 100
                 species_name = "meaty_ryans"
                 species["meaty_ryans"] = [add_pop, {"base_strain": [add_pop, {}]}, {}]

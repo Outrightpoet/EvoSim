@@ -5,7 +5,7 @@ from random_store import get_randint_one_three, get_randint_one_ten
 def hunt(aggressor, defender):
 
     #first part is camouflage check
-    if random.randint(1,100) > 50 * (defender.hiding_power / aggressor.sight_power):
+    if random.randint(1,100) > 50 * ((1 + defender.traits.camouflage) / (1 + aggressor.traits.sight)):
     #if creature has access to a sneak attack move it will go here, and it will override the second check if successful
     #second check is a speed check
         if aggressor.speed >= defender.speed or (aggressor.traits.camouflage + get_randint_one_ten()) >= (defender.traits.sight + get_randint_one_ten()) and (aggressor.traits.soft_feet + get_randint_one_ten()) >= (defender.traits.hearing + get_randint_one_ten()):

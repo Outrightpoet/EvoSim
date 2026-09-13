@@ -59,12 +59,12 @@ def plot_data(data1, title1, data2, title2, lines_data, x, line_labels=None, tit
         colors = ['red'] + ['skyblue'] * (len(values) - 1)
 
         ax_bar.barh(names, values, color=colors)
-        ax_bar.set_xlabel("Value")
+        ax_bar.set_xlabel("Population")
         ax_bar.set_ylabel("Name")
         ax_bar.set_title("Top Pop Species")
         ax_bar.invert_yaxis()  # top value on top
 
-    if breaking5 == True:
+    if breaking5 == True and len(species) != 1:
         fig.delaxes(axes[2, 0])  # remove the original Cartesian subplot
         ax_spider = plt.subplot(3, 2, 5, polar=True)
 
@@ -141,7 +141,7 @@ def plot_data(data1, title1, data2, title2, lines_data, x, line_labels=None, tit
         ax_spider.legend(loc='upper right', bbox_to_anchor=(1.2, 1.1))
         ax_spider.set_title("Top Five Species Traits")
 
-    if breaking6 == True:
+    if breaking6 == True and len(species) != 1:
         fig.delaxes(axes[2, 1])  # remove the original Cartesian subplot
         ax_spider = plt.subplot(3, 2, 5, polar=True)
 
